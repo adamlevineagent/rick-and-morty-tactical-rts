@@ -141,31 +141,35 @@ class Mission:
         """
         # Check for next enemy wave
         if self.current_wave < len(self.enemy_waves) - 1:
-            wave = self.enemy_waves[self.current_wave]
-            trigger_type = wave.get('trigger', 'time')
+            # Get the next wave (not the current one)
+            next_wave_index = self.current_wave + 1
+            next_wave = self.enemy_waves[next_wave_index]
+            trigger_type = next_wave.get('trigger', 'time')
+            
+            should_spawn_next_wave = False
             
             if trigger_type == 'time':
-                # Time-based wave
-                trigger_time = wave.get('trigger_time', 0)
+                # Time-based wave - check if it's time to spawn
+                trigger_time = next_wave.get('trigger_time', 0)
                 if game_state.game_time >= trigger_time:
-                    self.current_wave += 1
-                    unit_factory = UnitFactory()
-                    self._spawn_enemy_wave(self.current_wave, game_state, unit_factory)
+                    should_spawn_next_wave = True
                     
             elif trigger_type == 'enemies_defeated':
                 # Check if all enemies are defeated
                 if len(game_state.enemy_squads) == 0:
-                    self.current_wave += 1
-                    unit_factory = UnitFactory()
-                    self._spawn_enemy_wave(self.current_wave, game_state, unit_factory)
+                    should_spawn_next_wave = True
                     
             elif trigger_type == 'objective_complete':
                 # Check if the specified objective is completed
-                trigger_objective = wave.get('trigger_objective', '')
+                trigger_objective = next_wave.get('trigger_objective', '')
                 if trigger_objective in self.completed_objectives:
-                    self.current_wave += 1
-                    unit_factory = UnitFactory()
-                    self._spawn_enemy_wave(self.current_wave, game_state, unit_factory)
+                    should_spawn_next_wave = True
+            
+            # If conditions are met, spawn the next wave
+            if should_spawn_next_wave:
+                self.current_wave = next_wave_index
+                unit_factory = UnitFactory()
+                self._spawn_enemy_wave(self.current_wave, game_state, unit_factory)
         
         # Update mission objectives
         self._check_objectives(game_state)
@@ -212,15 +216,23 @@ class Mission:
             game_state: Current game state
         """
         for objective in self.objectives:
-            if objective['id'] in self.completed_objectives:
-                continue
-                
-            objective_type = objective.get('type')
-            
-            if objective_type == 'defeat_all':
-                # Check if all enemies are defeated
+            # Handle both string objectives and dictionary objectives
+            if isinstance(objective, str):
+                # Simple string objective - just a description
+                objective_id = objective
+                objective_type = "default"
+                target_group = None
+            else:
+                # Dictionary objective with full properties
+                objective_id = objective.get('id', str(objective))
+                objective_type = objective.get('type', 'default')
                 target_group = objective.get('target_group', None)
-                
+            
+            if objective_id in self.completed_objectives:
+                continue
+            
+            if objective_type == 'defeat_all' or objective_type == 'default':
+                # Check if all enemies are defeated
                 if target_group:
                     # Check if all enemies in the target group are defeated
                     all_defeated = True
@@ -231,11 +243,11 @@ class Mission:
                                 break
                     
                     if all_defeated:
-                        self.completed_objectives.append(objective['id'])
+                        self.completed_objectives.append(objective_id)
                 else:
                     # Check if all enemies are defeated
                     if len(game_state.enemy_squads) == 0:
-                        self.completed_objectives.append(objective['id'])
+                        self.completed_objectives.append(objective_id)
                     
             elif objective_type == 'survive_time':
                 # Check if player survived for the required time

@@ -235,8 +235,11 @@ class Unit:
         # Apply damage
         self.health -= amount
         
+        # Keep track of the attacker
+        self.last_attacker = attacker
+        
         # Apply knockback if the attacker is a melee unit
-        if attacker is not None and attacker.is_melee_unit():
+        if attacker is not None and hasattr(attacker, 'is_melee_unit') and attacker.is_melee_unit():
             # Calculate knockback direction (away from attacker)
             dx = self.position[0] - attacker.position[0]
             dy = self.position[1] - attacker.position[1]
@@ -265,9 +268,6 @@ class Unit:
             if self.state != "dead":
                 self.path = []  # Clear path to prevent automatic movement
                 
-        # Optional: Track who damaged this unit (useful for scoring or vengeance AI)
-        self.last_attacker = attacker
-        
         if self.health <= 0:
             self.health = 0
             self.state = "dead"
