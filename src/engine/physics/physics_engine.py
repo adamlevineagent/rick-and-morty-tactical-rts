@@ -30,13 +30,13 @@ class PhysicsEngine:
         self.physics_step = 1/60  # Fixed physics timestep
         self.accumulated_time = 0
         
-    def update(self, dt, game_state):
+    def update(self, game_state, dt):
         """
         Update all physics objects
         
         Args:
-            dt: Time elapsed since last frame in seconds
             game_state: The current game state
+            dt: Time elapsed since last frame in seconds
         """
         # Accumulate time for fixed timestep updates
         self.accumulated_time += dt

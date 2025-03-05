@@ -57,7 +57,9 @@ class Game:
         """Update game state"""
         # Process input and update game state
         commands = self.input_handler.get_commands()
-        self.game_state.update(commands, dt)
+        # Apply commands to game state here if needed
+        # For now, just update the game state with the time delta
+        self.game_state.update(dt)
         
         # Update physics
         self.physics_engine.update(self.game_state, dt)
@@ -66,6 +68,9 @@ class Game:
         """Render the current frame"""
         # Use our new game renderer
         self.renderer.render_game(self.game_state, self.physics_engine)
+        
+        # Update the display to show the rendered content
+        pygame.display.flip()
     
     def run(self):
         """Main game loop"""

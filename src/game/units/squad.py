@@ -81,13 +81,23 @@ class Squad:
         if self.target_position:
             self.move_to(self.target_position)
     
-    def attack_target(self, target_position: Tuple[float, float]) -> None:
+    def attack_target(self, target) -> None:
         """
-        Command the squad to attack at a specified position.
+        Command the squad to attack at a specified position or unit.
         
         Args:
-            target_position: The (x, y) coordinates to attack
+            target: Either coordinates (x,y) to attack or a Unit object to attack
         """
+        if hasattr(target, 'position'):
+            # If target is a Unit object, extract its position
+            target_position = target.position
+            # Also set this unit as the target for each unit in the squad
+            for unit in self.units:
+                unit.set_target(target)
+        else:
+            # Target is already a position
+            target_position = target
+            
         # First move to a position from which units can attack
         self.move_to(target_position)
         
