@@ -18,7 +18,7 @@ class PortalArcher(Unit):
             position: (x, y, z) initial position
             faction: The faction this unit belongs to (player, enemy)
         """
-        super().__init__("portal_archer", position, faction)
+        super().__init__("portal_archer", position, faction=faction, unit_type="portal_archer")
         
         # Override base stats with Portal Archer specific values
         self.max_health = 90

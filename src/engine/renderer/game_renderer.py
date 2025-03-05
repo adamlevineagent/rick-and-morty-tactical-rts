@@ -2,6 +2,8 @@ import pygame
 import numpy as np
 from typing import Dict, List, Tuple, Any, Optional
 import math
+import os
+from engine.asset_manager import AssetManager
 
 class GameRenderer:
     """
@@ -47,6 +49,10 @@ class GameRenderer:
         # Initialize Pygame if not already initialized
         if not pygame.get_init():
             pygame.init()
+        
+        # Asset manager initialization
+        base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..', '..'))
+        self.asset_manager = AssetManager(base_path)
     
     def initialize(self):
         """Initialize the renderer and create the game window"""
@@ -437,7 +443,15 @@ class GameRenderer:
         # Panel background
         panel_rect = pygame.Rect(10, self.screen_height - 100, 300, 90)
         pygame.draw.rect(self.screen, (0, 0, 0, 180), panel_rect)
-        pygame.draw.rect(self.screen, (200, 200, 200), panel_rect, 1)
+        pygame.draw.rect(self.screen, (200, 200, 240), panel_rect, 2)
+        
+        # Get panel from asset manager
+        panel_img = self.asset_manager.get_ui_element('panel_blue')
+        
+        if panel_img:
+            # Scale the panel image
+            scaled_panel = pygame.transform.scale(panel_img, (panel_rect.width, panel_rect.height))
+            self.screen.blit(scaled_panel, panel_rect)
         
         # If squads are selected
         if game_state.selected_squads:

@@ -6,17 +6,19 @@ from typing import Tuple, List, Optional, Any
 class Unit:
     """Base class for all units in the game"""
     
-    def __init__(self, unit_type: str, position: Tuple[float, float, float], faction: str = "player"):
+    def __init__(self, type_name: str, position: Tuple[float, float, float], faction: str = "neutral", unit_type: Optional[str] = None):
         """
         Initialize a new unit
         
         Args:
-            unit_type: The type of unit (dimensioneer, portal_archer, etc.)
+            type_name: String identifier of the unit type
             position: (x, y, z) initial position
-            faction: The faction this unit belongs to (player, enemy)
+            faction: The faction this unit belongs to (player, enemy, neutral)
+            unit_type: Optional override for asset selection (defaults to type_name)
         """
         self.id = str(uuid.uuid4())
-        self.type = unit_type
+        self.type = type_name
+        self.unit_type = unit_type if unit_type else type_name  # Used for asset selection
         self.position = position
         self.rotation = 0  # degrees, 0 is east, going counter-clockwise
         self.faction = faction
@@ -381,7 +383,7 @@ class Unit:
         
         # Get sprite based on type, direction and animation frame
         sprite = renderer.get_unit_sprite(
-            self.type, 
+            self.unit_type, 
             self.sprite_index, 
             self.animation_frame, 
             self.state

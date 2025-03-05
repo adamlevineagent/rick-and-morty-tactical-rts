@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from engine.renderer.game_renderer import GameRenderer
 from engine.physics.physics_engine import PhysicsEngine
 from engine.input.input_handler import InputHandler
+from engine.asset_manager import AssetManager
 from game.game_state import GameState
 from game.mission.mission_manager import MissionManager
 from game.units.dimensioneer import Dimensioneer

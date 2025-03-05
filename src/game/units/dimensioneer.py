@@ -18,7 +18,7 @@ class Dimensioneer(Unit):
             position: (x, y, z) initial position
             faction: The faction this unit belongs to (player, enemy)
         """
-        super().__init__("dimensioneer", position, faction)
+        super().__init__("dimensioneer", position, faction=faction, unit_type="dimensioneer")
         
         # Override base stats with Dimensioneer-specific values
         self.max_health = 150
