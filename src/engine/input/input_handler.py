@@ -1,5 +1,8 @@
 import pygame
+import numpy as np
 from pygame.locals import *
+import math
+from typing import List, Dict, Any, Tuple, Optional
 
 class InputHandler:
     """
@@ -17,6 +20,12 @@ class InputHandler:
         self.selection_start = None
         self.is_selecting = False
         self.selected_units = []
+        self.selection_changed = False
+        
+        # For double click detection
+        self.last_click_time = 0
+        self.last_click_position = (0, 0)
+        self.double_click_threshold = 300  # milliseconds
         
         # Camera control state
         self.camera_move = [0, 0]  # x, y movement direction
@@ -49,41 +58,30 @@ class InputHandler:
                 self.camera_zoom = -1
             elif event.key == K_x:
                 self.camera_zoom = 1
-                
-            # Camera pitch
-            if event.key == K_w:
-                self.camera_pitch = -1
-            elif event.key == K_s:
-                self.camera_pitch = 1
             
+            # Clear selection with Escape
+            if event.key == K_ESCAPE:
+                self.selected_units = []
+                self.selection_changed = True
+                
         elif event.type == KEYUP:
-            self.keys_pressed[event.key] = False
-            
-            # Reset camera controls if key is released
-            if event.key == K_q and self.camera_rotation == -1:
-                self.camera_rotation = 0
-            elif event.key == K_e and self.camera_rotation == 1:
-                self.camera_rotation = 0
+            if event.key in self.keys_pressed:
+                self.keys_pressed[event.key] = False
                 
-            if event.key == K_z and self.camera_zoom == -1:
-                self.camera_zoom = 0
-            elif event.key == K_x and self.camera_zoom == 1:
+            # Reset camera controls
+            if event.key == K_q or event.key == K_e:
+                self.camera_rotation = 0
+            elif event.key == K_z or event.key == K_x:
                 self.camera_zoom = 0
                 
-            if event.key == K_w and self.camera_pitch == -1:
-                self.camera_pitch = 0
-            elif event.key == K_s and self.camera_pitch == 1:
-                self.camera_pitch = 0
-        
-        # Handle mouse events
         elif event.type == MOUSEMOTION:
             self.mouse_position = event.pos
             
-            # Check for edge scrolling
-            edge_size = 20
+            # Edge scrolling - determine screen size
             w, h = pygame.display.get_surface().get_size()
+            edge_size = 20  # pixels from edge that triggers scrolling
             
-            # Reset movement direction
+            # Reset camera movement first
             self.camera_move = [0, 0]
             
             # Edge scrolling - check if mouse is near screen edges
@@ -107,24 +105,45 @@ class InputHandler:
                 self.mouse_buttons[event.button - 1] = True
                 
                 if event.button == 1:  # Left button
-                    # Start selection
+                    # Check if this is a double click
+                    current_time = pygame.time.get_ticks()
+                    click_position = event.pos
+                    
+                    # Calculate distance between this click and last click
+                    dx = click_position[0] - self.last_click_position[0]
+                    dy = click_position[1] - self.last_click_position[1]
+                    click_distance = math.sqrt(dx*dx + dy*dy)
+                    
+                    is_double_click = (current_time - self.last_click_time < self.double_click_threshold and 
+                                      click_distance < 10)  # Must be close to same spot
+                    
+                    # Store this click for next double click check
+                    self.last_click_time = current_time
+                    self.last_click_position = click_position
+                    
+                    # Start selection - drag box or single click
                     self.selection_start = event.pos
                     self.is_selecting = True
                     
                     # Add selection command to queue
                     self.command_queue.append({
                         "type": "selection_start",
-                        "position": event.pos
+                        "position": event.pos,
+                        "shift_held": self.keys_pressed.get(K_LSHIFT, False) or self.keys_pressed.get(K_RSHIFT, False),
+                        "is_double_click": is_double_click
                     })
                 
                 elif event.button == 3:  # Right button
                     # Issue command with selected units
                     if len(self.selected_units) > 0:
+                        # Check if attack modifier key is being held (Alt)
+                        is_attack = self.keys_pressed.get(K_LALT, False) or self.keys_pressed.get(K_RALT, False)
+                        
                         self.command_queue.append({
                             "type": "unit_command",
                             "units": self.selected_units.copy(),
                             "target_position": event.pos,
-                            "command": "move"  # Default command is move
+                            "command": "attack" if is_attack else "move"
                         })
                 
         elif event.type == MOUSEBUTTONUP:
@@ -135,13 +154,24 @@ class InputHandler:
                     # End selection
                     self.is_selecting = False
                     
-                    # Add selection end command to queue
+                    # Calculate selection size
+                    start_x, start_y = self.selection_start
+                    end_x, end_y = event.pos
+                    width = abs(end_x - start_x)
+                    height = abs(end_y - start_y)
+                    
+                    # Determine if this is a point selection or a box selection
+                    is_point_selection = (width < 5 and height < 5)
+                    
+                    # Add selection end command to queue with additional metadata
                     self.command_queue.append({
                         "type": "selection_end",
                         "start": self.selection_start,
-                        "end": event.pos
+                        "end": event.pos,
+                        "is_point_selection": is_point_selection,
+                        "shift_held": self.keys_pressed.get(K_LSHIFT, False) or self.keys_pressed.get(K_RSHIFT, False)
                     })
-                    
+    
     def _handle_keyboard_input(self):
         """Handle sustained keyboard input (keys being held down)"""
         # Arrow keys for camera movement
@@ -231,22 +261,21 @@ class InputHandler:
             
     def _apply_camera_controls(self, renderer):
         """
-        Apply camera control inputs to the provided renderer
+        Apply camera controls to the renderer
         
         Args:
-            renderer: The game renderer to control
+            renderer: Game renderer to apply camera controls to
         """
         # Camera movement
-        move_speed = 5.0 * (1.0 / max(0.1, renderer.camera_zoom))  # Slower movement when zoomed in
         if self.camera_move[0] != 0 or self.camera_move[1] != 0:
-            # Convert to world space direction
-            dx = self.camera_move[0] * move_speed
-            dy = self.camera_move[1] * move_speed
+            # Calculate movement direction
+            dx = self.camera_move[0] * 5.0  # Increase speed from default
+            dy = self.camera_move[1] * 5.0  # Increase speed from default
             
             # Apply rotation to movement direction
             angle = renderer.camera_rotation
-            cos_angle = pygame.math.cos(angle)
-            sin_angle = pygame.math.sin(angle)
+            cos_angle = math.cos(angle)
+            sin_angle = math.sin(angle)
             
             # Rotate movement vector
             moved_x = dx * cos_angle - dy * sin_angle
@@ -261,12 +290,12 @@ class InputHandler:
         
         # Camera rotation
         if self.camera_rotation != 0:
-            rotation_speed = 0.02
+            rotation_speed = 0.04  # Double the rotation speed
             renderer.camera_rotation += self.camera_rotation * rotation_speed
             
         # Camera zoom
         if self.camera_zoom != 0:
-            zoom_factor = 1.1 if self.camera_zoom > 0 else 0.9
+            zoom_factor = 1.15 if self.camera_zoom > 0 else 0.85  # More dramatic zoom
             renderer.camera_zoom *= zoom_factor
             # Clamp zoom range
             renderer.camera_zoom = max(0.1, min(50.0, renderer.camera_zoom))
@@ -277,3 +306,80 @@ class InputHandler:
             new_pitch = renderer.camera_pitch + self.camera_pitch * pitch_speed
             # Clamp pitch to reasonable range
             renderer.camera_pitch = max(10.0, min(80.0, new_pitch))
+
+    def select_units(self, game_state, renderer, selection_rect, is_point_selection, shift_held, is_double_click=False):
+        """
+        Select units based on the provided selection criteria
+        
+        Args:
+            game_state: Current game state
+            renderer: Game renderer
+            selection_rect: (x, y, width, height) of selection rectangle in screen space
+            is_point_selection: True if single point click, False if drag selection
+            shift_held: Whether shift key is held (add to current selection)
+            is_double_click: Whether this was a double-click (selects all of same type)
+        """
+        # Get all player units for selection
+        all_units = []
+        for squad in game_state.player_squads:
+            all_units.extend(squad.units)
+            
+        # Units we will include in new selection
+        newly_selected = []
+        
+        # Check if a unit was clicked directly (point selection)
+        if is_point_selection:
+            clicked_unit = None
+            
+            # Find the unit that was clicked
+            for unit in all_units:
+                screen_pos = renderer.world_to_screen(unit.position)
+                # Distance from click to unit center
+                dx = screen_pos[0] - selection_rect[0]
+                dy = screen_pos[1] - selection_rect[1]
+                distance = math.sqrt(dx*dx + dy*dy)
+                
+                # Radius for selection depends on unit type and zoom
+                unit_size = max(10, int(15 * renderer.camera_zoom / 10))
+                
+                if distance <= unit_size:
+                    clicked_unit = unit
+                    break
+            
+            if clicked_unit:
+                if is_double_click:
+                    # Double click - select all units of same type on screen
+                    for unit in all_units:
+                        if unit.type == clicked_unit.type:
+                            screen_pos = renderer.world_to_screen(unit.position)
+                            # Only select if on screen
+                            screen_w, screen_h = pygame.display.get_surface().get_size()
+                            if (0 <= screen_pos[0] <= screen_w and 
+                                0 <= screen_pos[1] <= screen_h):
+                                newly_selected.append(unit)
+                else:
+                    # Single click - select just this unit
+                    newly_selected.append(clicked_unit)
+        else:
+            # Drag selection - select all units in the rectangle
+            x, y, w, h = selection_rect
+            for unit in all_units:
+                screen_pos = renderer.world_to_screen(unit.position)
+                if (x <= screen_pos[0] <= x + w and
+                    y <= screen_pos[1] <= y + h):
+                    newly_selected.append(unit)
+        
+        # Update the selection
+        if shift_held:
+            # With shift held, add/remove from current selection
+            for unit in newly_selected:
+                if unit in self.selected_units:
+                    self.selected_units.remove(unit)
+                else:
+                    self.selected_units.append(unit)
+        else:
+            # Without shift, replace current selection
+            self.selected_units = newly_selected
+        
+        # Mark that selection has changed
+        self.selection_changed = True

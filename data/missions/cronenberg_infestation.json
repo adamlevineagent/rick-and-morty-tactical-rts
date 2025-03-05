@@ -1,0 +1,119 @@
+{
+  "mission_id": "cronenberg_infestation",
+  "name": "Cronenberg Infestation",
+  "description": "A Cronenberg outbreak has occurred on Planet C-137. Eliminate all infected creatures and secure the area.",
+  "map_name": "c137_outpost",
+  "difficulty": "hard",
+  "time_limit": 600,
+  "objectives": [
+    {
+      "id": "clear_zone_a",
+      "type": "defeat_all",
+      "description": "Clear Cronenbergs from Zone A",
+      "target_group": "zone_a_enemies",
+      "mandatory": true
+    },
+    {
+      "id": "reach_laboratory",
+      "type": "reach_position",
+      "description": "Reach the containment laboratory",
+      "position": [
+        200,
+        200,
+        0
+      ],
+      "radius": 30,
+      "mandatory": true
+    },
+    {
+      "id": "protect_scientists",
+      "type": "survive_time",
+      "description": "Protect scientists for 5 minutes",
+      "time": 300,
+      "mandatory": true
+    }
+  ],
+  "player_squads": [
+    {
+      "type": "balanced",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": 8,
+      "name": "Containment Squad Alpha"
+    },
+    {
+      "type": "archer",
+      "position": [
+        -30,
+        30,
+        0
+      ],
+      "size": 5,
+      "name": "Support Team"
+    }
+  ],
+  "enemy_waves": [
+    {
+      "trigger": "time",
+      "trigger_time": 5,
+      "squads": [
+        {
+          "type": "cronenberg",
+          "position": [
+            150,
+            150,
+            0
+          ],
+          "size": 10,
+          "name": "Cronenberg Pack Alpha",
+          "group": "zone_a_enemies"
+        }
+      ]
+    },
+    {
+      "trigger": "objective_complete",
+      "trigger_objective": "clear_zone_a",
+      "squads": [
+        {
+          "type": "cronenberg",
+          "position": [
+            250,
+            -150,
+            0
+          ],
+          "size": 15,
+          "name": "Cronenberg Pack Beta"
+        },
+        {
+          "type": "cronenberg",
+          "position": [
+            -200,
+            200,
+            0
+          ],
+          "size": 5,
+          "name": "Cronenberg Scouts"
+        }
+      ]
+    },
+    {
+      "trigger": "time",
+      "trigger_time": 300,
+      "squads": [
+        {
+          "type": "cronenberg_alpha",
+          "position": [
+            0,
+            250,
+            0
+          ],
+          "size": 1,
+          "name": "Cronenberg Alpha Specimen"
+        }
+      ]
+    }
+  ]
+}

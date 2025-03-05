@@ -27,6 +27,12 @@ class PortalArcher(Unit):
         self.damage = 15
         self.attack_range = 18.0  # Long range
         self.attack_speed = 0.8  # attacks per second (slower than melee)
+        self.is_ranged = True  # This is a ranged unit
+        
+        # Knockback settings
+        self.knockback_power = 0.0  # No knockback on ranged attacks
+        self.knockback_resistance = 0.1  # Low resistance to being knocked back
+        self.knockback_recovery = 1.5  # Slow recovery from knockback
         
         # Special abilities
         self.can_portal_volley = True

@@ -1,4 +1,5 @@
 import numpy as np
+import pygame
 from typing import List, Tuple, Dict, Any
 
 from game.objects import Projectile, Explosion
@@ -305,31 +306,58 @@ class PhysicsEngine:
         
         return explosion
     
-    def render(self, dt):
+    def render(self, screen, renderer=None):
         """
         Render all physics objects
         
         Args:
-            dt: Time elapsed since last frame
+            screen: Pygame screen to render to
+            renderer: Optional renderer for coordinate transformations
         """
-        if not self.renderer:
+        # Use provided renderer or stored renderer
+        renderer_to_use = renderer if renderer else self.renderer
+        
+        if not renderer_to_use:
             return  # Can't render without a renderer
-            
-        screen = self.renderer.screen
         
         # Render projectiles
         for projectile in self.projectiles:
-            projectile.render(screen, self.renderer)
+            # Convert world position to screen coordinates
+            screen_pos = renderer_to_use.world_to_screen(projectile.position)
             
+            # Skip if off screen
+            if (screen_pos[0] < -20 or screen_pos[0] > renderer_to_use.screen_width + 20 or
+                screen_pos[1] < -20 or screen_pos[1] > renderer_to_use.screen_height + 20):
+                continue
+                
+            # Determine projectile appearance based on type
+            if projectile.projectile_type == "energy":
+                # Energy bolts are small circles
+                pygame.draw.circle(screen, (0, 255, 255), screen_pos, 3)
+            elif projectile.projectile_type == "portal":
+                # Portal projectiles are green circles
+                pygame.draw.circle(screen, (0, 255, 0), screen_pos, 4)
+            elif projectile.projectile_type == "grenade":
+                # Grenades are larger orange circles
+                pygame.draw.circle(screen, (255, 165, 0), screen_pos, 5)
+            else:
+                # Default projectile is a white circle
+                pygame.draw.circle(screen, (255, 255, 255), screen_pos, 3)
+                
+            # Trail effect (simple for now)
+            if hasattr(projectile, 'previous_positions') and len(projectile.previous_positions) > 1:
+                prev_points = [renderer_to_use.world_to_screen(pos) for pos in projectile.previous_positions[-5:]]
+                if len(prev_points) > 1:
+                    pygame.draw.lines(screen, (100, 100, 100), False, prev_points, 1)
+        
         # Render explosions
         for explosion in self.explosions:
-            explosion.render(screen, self.renderer)
+            explosion.render(screen, renderer_to_use)
             
         # Render debris (simplified for now)
         for debris in self.debris:
             # Convert world position to screen position
-            screen_pos = self.renderer.world_to_screen(debris['position'])
+            screen_pos = renderer_to_use.world_to_screen(debris['position'])
             
             # Draw a simple circle for debris
-            import pygame
-            pygame.draw.circle(screen, (100, 100, 100), screen_pos, int(debris['size'] * self.renderer.camera_zoom))
+            pygame.draw.circle(screen, (100, 100, 100), screen_pos, int(debris['size'] * renderer_to_use.camera_zoom))

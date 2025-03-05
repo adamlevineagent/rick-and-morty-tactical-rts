@@ -1,0 +1,147 @@
+{
+  "mission_id": "blood_ridge_showdown",
+  "name": "Showdown at Blood Ridge",
+  "description": "The Federation forces are making their last stand at Blood Ridge. Defeat them before reinforcements arrive.",
+  "map_name": "blood_ridge",
+  "difficulty": "extreme",
+  "time_limit": 900,
+  "objectives": [
+    {
+      "id": "eliminate_command",
+      "type": "defeat_all",
+      "description": "Eliminate Federation Command Post",
+      "target_group": "command_post",
+      "mandatory": true
+    },
+    {
+      "id": "destroy_turrets",
+      "type": "defeat_all",
+      "description": "Destroy all defensive turrets",
+      "target_group": "turrets",
+      "mandatory": true
+    },
+    {
+      "id": "hold_ridge",
+      "type": "survive_time",
+      "description": "Hold Blood Ridge for 10 minutes",
+      "time": 600,
+      "mandatory": true
+    },
+    {
+      "id": "rescue_prisoners",
+      "type": "reach_position",
+      "description": "Rescue prisoners (optional)",
+      "position": [
+        -150,
+        -150,
+        0
+      ],
+      "radius": 20,
+      "mandatory": false
+    }
+  ],
+  "player_squads": [
+    {
+      "type": "balanced",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": 10,
+      "name": "Strike Force Alpha"
+    },
+    {
+      "type": "archer",
+      "position": [
+        -20,
+        20,
+        0
+      ],
+      "size": 8,
+      "name": "Ranger Squad"
+    },
+    {
+      "type": "grenadier",
+      "position": [
+        20,
+        -20,
+        0
+      ],
+      "size": 5,
+      "name": "Demo Team"
+    }
+  ],
+  "enemy_waves": [
+    {
+      "trigger": "time",
+      "trigger_time": 0,
+      "squads": [
+        {
+          "type": "gromflomite",
+          "position": [
+            200,
+            200,
+            0
+          ],
+          "size": 15,
+          "name": "Federation Guards",
+          "group": "command_post"
+        },
+        {
+          "type": "turret",
+          "position": [
+            150,
+            150,
+            0
+          ],
+          "size": 4,
+          "name": "Defense Turrets",
+          "group": "turrets"
+        }
+      ]
+    },
+    {
+      "trigger": "time",
+      "trigger_time": 300,
+      "squads": [
+        {
+          "type": "gromflomite_elite",
+          "position": [
+            250,
+            250,
+            0
+          ],
+          "size": 8,
+          "name": "Elite Guard"
+        }
+      ]
+    },
+    {
+      "trigger": "time",
+      "trigger_time": 600,
+      "squads": [
+        {
+          "type": "gromflomite_commander",
+          "position": [
+            0,
+            300,
+            0
+          ],
+          "size": 1,
+          "name": "Federation Commander"
+        },
+        {
+          "type": "gromflomite",
+          "position": [
+            50,
+            300,
+            0
+          ],
+          "size": 20,
+          "name": "Final Reinforcements"
+        }
+      ]
+    }
+  ]
+}

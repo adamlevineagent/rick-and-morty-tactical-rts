@@ -39,10 +39,20 @@ class Unit:
         
         # Common attributes (will be overridden by subclasses)
         self.speed = 5.0
-        self.damage = 10
         self.attack_range = 1.0
         self.attack_speed = 1.0  # attacks per second
-        self.attack_timer = 0
+        self.damage = 10
+        self.is_ranged = False
+        
+        # Knockback parameters
+        self.knockback_power = 0.0  # How far this unit pushes enemies on hit
+        self.knockback_resistance = 0.0  # How resistant this unit is to being knocked back
+        self.knockback_recovery = 2.0  # How quickly unit recovers from knockback (seconds)
+        self.knockback_timer = 0  # Current knockback recovery timer
+        self.knockback_velocity = np.array([0.0, 0.0, 0.0])  # Current knockback movement
+        
+        # Track who damaged this unit (useful for scoring or vengeance AI)
+        self.last_attacker = None
         
     def update(self, dt: float, game_state) -> None:
         """
@@ -52,6 +62,29 @@ class Unit:
             dt: Time elapsed since last frame in seconds
             game_state: Current game state
         """
+        # Process knockback if active
+        if self.knockback_timer > 0:
+            # Move unit based on knockback velocity
+            self.position = (
+                self.position[0] + self.knockback_velocity[0] * dt,
+                self.position[1] + self.knockback_velocity[1] * dt,
+                self.position[2]
+            )
+            
+            # Reduce knockback timer
+            self.knockback_timer -= dt
+            if self.knockback_timer <= 0:
+                # Reset knockback
+                self.knockback_velocity = np.array([0.0, 0.0, 0.0])
+                self.knockback_timer = 0
+                
+                # If the unit was in an active state before knockback, resume it
+                if self.state == "idle" and self.target is not None:
+                    self.state = "attacking"
+            
+            # Skip other updates while affected by knockback
+            return
+        
         # Update animation timer
         self.animation_timer += dt
         if self.animation_timer >= self.animation_speed:
@@ -169,7 +202,7 @@ class Unit:
             self.attack_timer = 0
             
             # Perform attack
-            target_unit.take_damage(self.damage)
+            target_unit.take_damage(self.damage, self)
             
             # Trigger attack animation
             self.animation_frame = 0
@@ -185,14 +218,53 @@ class Unit:
         """Check if the unit is alive"""
         return self.state != "dead"
             
-    def take_damage(self, damage: float) -> None:
+    def is_melee_unit(self) -> bool:
+        """Determine if this unit is considered a melee unit"""
+        return not self.is_ranged and self.attack_range <= 2.0
+
+    def take_damage(self, amount: float, attacker=None) -> None:
         """
-        Apply damage to the unit
+        Deal damage to the unit
         
         Args:
-            damage: Amount of damage to apply
+            amount: Amount of damage to deal
+            attacker: Unit that caused the damage (optional)
         """
-        self.health -= damage
+        # Apply damage
+        self.health -= amount
+        
+        # Apply knockback if the attacker is a melee unit
+        if attacker is not None and attacker.is_melee_unit():
+            # Calculate knockback direction (away from attacker)
+            dx = self.position[0] - attacker.position[0]
+            dy = self.position[1] - attacker.position[1]
+            if dx == 0 and dy == 0:  # Prevent division by zero
+                # Random direction if units are stacked
+                angle = np.random.random() * 2 * np.pi
+                dx, dy = np.cos(angle), np.sin(angle)
+            else:
+                # Normalize direction vector
+                mag = np.sqrt(dx*dx + dy*dy)
+                dx, dy = dx/mag, dy/mag
+            
+            # Calculate knockback amount based on attacker's power and unit's resistance
+            knockback_strength = max(0, attacker.knockback_power - self.knockback_resistance)
+            
+            # Apply knockback (distance slightly longer than attacker's range)
+            knockback_distance = attacker.attack_range * 1.2 * knockback_strength
+            
+            # Set knockback velocity (this will be used during unit update)
+            self.knockback_velocity = np.array([dx * knockback_distance, dy * knockback_distance, 0])
+            
+            # Set knockback recovery timer
+            self.knockback_timer = self.knockback_recovery
+            
+            # Briefly interrupt current action
+            if self.state != "dead":
+                self.path = []  # Clear path to prevent automatic movement
+                
+        # Optional: Track who damaged this unit (useful for scoring or vengeance AI)
+        self.last_attacker = attacker
         
         if self.health <= 0:
             self.health = 0
@@ -206,6 +278,22 @@ class Unit:
             amount: Amount of health to restore
         """
         self.health = min(self.health + amount, self.max_health)
+    
+    def set_destination(self, destination: tuple) -> None:
+        """
+        Set a destination for the unit to move to
+        
+        Args:
+            destination: Target position (x, y, z)
+        """
+        # Store destination
+        self.destination = destination
+        
+        # Create a path (for now just a direct line)
+        self.path = [destination]
+        
+        # Set state to moving
+        self.state = "moving"
     
     def move_to(self, target_position: List[float]) -> None:
         """

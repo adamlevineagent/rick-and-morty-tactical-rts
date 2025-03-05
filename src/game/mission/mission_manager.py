@@ -60,38 +60,208 @@ class MissionManager:
             return False
     
     def create_default_missions(self) -> None:
-        """Create default missions if none exist"""
-        # Check if missions directory is empty
-        if os.path.exists(self.missions_dir) and len(os.listdir(self.missions_dir)) > 0:
-            return
-            
-        # Create directory if it doesn't exist
-        os.makedirs(self.missions_dir, exist_ok=True)
+        """
+        Create default missions if none exist in the missions directory
+        """
+        # Create default mission data
+        missions = [
+            {
+                "mission_id": "citadel_crisis",
+                "name": "Citadel Crisis",
+                "description": "Federation forces have launched an assault on the Citadel. Defeat the waves of Gromflomites and protect the citizens!",
+                "map_name": "citadel",
+                "difficulty": "normal",
+                "time_limit": 0,
+                "objectives": [
+                    {
+                        "id": "defeat_enemies",
+                        "type": "defeat_all",
+                        "description": "Defeat all enemy forces",
+                        "mandatory": True
+                    },
+                    {
+                        "id": "protect_civilians",
+                        "type": "survive_time",
+                        "description": "Protect civilians for 5 minutes",
+                        "time": 300,
+                        "mandatory": True
+                    }
+                ],
+                "player_squads": [
+                    {
+                        "type": "balanced",
+                        "position": [0, 0, 0],
+                        "size": 8,
+                        "name": "Defense Squad Alpha"
+                    },
+                    {
+                        "type": "archer",
+                        "position": [-50, 50, 0],
+                        "size": 5,
+                        "name": "Defense Squad Bravo"
+                    }
+                ],
+                "enemy_waves": [
+                    {
+                        "trigger": "time",
+                        "trigger_time": 10,
+                        "squads": [
+                            {
+                                "type": "gromflomite",
+                                "position": [200, 200, 0],
+                                "size": 10,
+                                "name": "First Wave"
+                            }
+                        ]
+                    },
+                    {
+                        "trigger": "enemies_defeated",
+                        "squads": [
+                            {
+                                "type": "gromflomite",
+                                "position": [200, -200, 0],
+                                "size": 15,
+                                "name": "Second Wave"
+                            },
+                            {
+                                "type": "gromflomite",
+                                "position": [-200, 200, 0],
+                                "size": 5,
+                                "name": "Flanking Force"
+                            }
+                        ]
+                    },
+                    {
+                        "trigger": "enemies_defeated",
+                        "squads": [
+                            {
+                                "type": "gromflomite",
+                                "position": [250, 0, 0],
+                                "size": 20,
+                                "name": "Final Wave"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "mission_id": "purge_planet",
+                "name": "Purge Planet Patrol",
+                "description": "It's the annual Purge on this planet! Rescue stranded scientists while defending against hostile purgers.",
+                "map_name": "purge_planet",
+                "difficulty": "hard",
+                "time_limit": 600,  # 10 minutes
+                "objectives": [
+                    {
+                        "id": "reach_extraction",
+                        "type": "reach_position",
+                        "description": "Reach the extraction point",
+                        "position": [300, 300, 0],
+                        "radius": 20,
+                        "mandatory": True
+                    },
+                    {
+                        "id": "defeat_all",
+                        "type": "defeat_all",
+                        "description": "Defeat all purgers (optional)",
+                        "mandatory": False
+                    }
+                ],
+                "player_squads": [
+                    {
+                        "type": "balanced",
+                        "position": [0, 0, 0],
+                        "size": 6,
+                        "name": "Rescue Team"
+                    },
+                    {
+                        "type": "grenadier",
+                        "position": [20, -20, 0],
+                        "size": 4,
+                        "name": "Heavy Support"
+                    }
+                ],
+                "enemy_waves": [
+                    {
+                        "trigger": "time",
+                        "trigger_time": 0,
+                        "squads": [
+                            {
+                                "type": "gromflomite",
+                                "position": [100, 100, 0],
+                                "size": 8,
+                                "name": "Purgers Alpha"
+                            }
+                        ]
+                    },
+                    {
+                        "trigger": "time",
+                        "trigger_time": 120,
+                        "squads": [
+                            {
+                                "type": "gromflomite",
+                                "position": [-100, 150, 0],
+                                "size": 10,
+                                "name": "Purgers Beta"
+                            }
+                        ]
+                    },
+                    {
+                        "trigger": "time",
+                        "trigger_time": 240,
+                        "squads": [
+                            {
+                                "type": "gromflomite",
+                                "position": [150, -100, 0],
+                                "size": 12,
+                                "name": "Purgers Gamma"
+                            }
+                        ]
+                    },
+                    {
+                        "trigger": "time",
+                        "trigger_time": 360,
+                        "squads": [
+                            {
+                                "type": "gromflomite",
+                                "position": [200, 200, 0],
+                                "size": 15,
+                                "name": "Purgers Delta"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
         
-        # Create default missions
-        self._create_citadel_crisis_mission()
-        self._create_purge_planet_mission()
-        
-    def _create_citadel_crisis_mission(self) -> None:
-        """Create the 'Citadel Crisis' mission"""
-        mission_data = {
-            "mission_id": "citadel_crisis",
-            "name": "Citadel Crisis",
-            "description": "Federation forces have launched an assault on the Citadel. Defeat the waves of Gromflomites and protect the citizens!",
-            "map_name": "citadel",
-            "difficulty": "normal",
-            "time_limit": 0,
+        # Create "Cronenberg Infestation" mission
+        cronenberg_mission = {
+            "mission_id": "cronenberg_infestation",
+            "name": "Cronenberg Infestation",
+            "description": "A Cronenberg outbreak has occurred on Planet C-137. Eliminate all infected creatures and secure the area.",
+            "map_name": "c137_outpost",
+            "difficulty": "hard",
+            "time_limit": 600,  # 10 minutes
             "objectives": [
                 {
-                    "id": "defeat_enemies",
+                    "id": "clear_zone_a",
                     "type": "defeat_all",
-                    "description": "Defeat all enemy forces",
+                    "description": "Clear Cronenbergs from Zone A",
+                    "target_group": "zone_a_enemies",
                     "mandatory": True
                 },
                 {
-                    "id": "protect_civilians",
+                    "id": "reach_laboratory",
+                    "type": "reach_position",
+                    "description": "Reach the containment laboratory",
+                    "position": [200, 200, 0],
+                    "radius": 30,
+                    "mandatory": True
+                },
+                {
+                    "id": "protect_scientists",
                     "type": "survive_time",
-                    "description": "Protect civilians for 5 minutes",
+                    "description": "Protect scientists for 5 minutes",
                     "time": 300,
                     "mandatory": True
                 }
@@ -101,88 +271,98 @@ class MissionManager:
                     "type": "balanced",
                     "position": [0, 0, 0],
                     "size": 8,
-                    "name": "Defense Squad Alpha"
+                    "name": "Containment Squad Alpha"
                 },
                 {
                     "type": "archer",
-                    "position": [-50, 50, 0],
+                    "position": [-30, 30, 0],
                     "size": 5,
-                    "name": "Defense Squad Bravo"
+                    "name": "Support Team"
                 }
             ],
             "enemy_waves": [
                 {
                     "trigger": "time",
-                    "trigger_time": 10,
+                    "trigger_time": 5,
                     "squads": [
                         {
-                            "type": "gromflomite",
-                            "position": [200, 200, 0],
+                            "type": "cronenberg",
+                            "position": [150, 150, 0],
                             "size": 10,
-                            "name": "First Wave"
+                            "name": "Cronenberg Pack Alpha",
+                            "group": "zone_a_enemies"
                         }
                     ]
                 },
                 {
-                    "trigger": "enemies_defeated",
+                    "trigger": "objective_complete",
+                    "trigger_objective": "clear_zone_a",
                     "squads": [
                         {
-                            "type": "gromflomite",
-                            "position": [200, -200, 0],
+                            "type": "cronenberg",
+                            "position": [250, -150, 0],
                             "size": 15,
-                            "name": "Second Wave"
+                            "name": "Cronenberg Pack Beta"
                         },
                         {
-                            "type": "gromflomite",
+                            "type": "cronenberg",
                             "position": [-200, 200, 0],
                             "size": 5,
-                            "name": "Flanking Force"
+                            "name": "Cronenberg Scouts"
                         }
                     ]
                 },
                 {
-                    "trigger": "enemies_defeated",
+                    "trigger": "time",
+                    "trigger_time": 300,  # 5 minutes in
                     "squads": [
                         {
-                            "type": "gromflomite",
-                            "position": [250, 0, 0],
-                            "size": 20,
-                            "name": "Final Wave"
+                            "type": "cronenberg_alpha",
+                            "position": [0, 250, 0],
+                            "size": 1,
+                            "name": "Cronenberg Alpha Specimen"
                         }
                     ]
                 }
             ]
         }
         
-        # Save to file
-        filepath = os.path.join(self.missions_dir, "citadel_crisis.json")
-        with open(filepath, 'w') as f:
-            json.dump(mission_data, f, indent=2)
-            
-        print(f"Created default mission: Citadel Crisis")
-    
-    def _create_purge_planet_mission(self) -> None:
-        """Create the 'Purge Planet Patrol' mission"""
-        mission_data = {
-            "mission_id": "purge_planet",
-            "name": "Purge Planet Patrol",
-            "description": "It's the annual Purge on this planet! Rescue stranded scientists while defending against hostile purgers.",
-            "map_name": "purge_planet",
-            "difficulty": "hard",
-            "time_limit": 600,  # 10 minutes
+        # Create "Showdown at Blood Ridge" mission
+        blood_ridge_mission = {
+            "mission_id": "blood_ridge_showdown",
+            "name": "Showdown at Blood Ridge",
+            "description": "The Federation forces are making their last stand at Blood Ridge. Defeat them before reinforcements arrive.",
+            "map_name": "blood_ridge",
+            "difficulty": "extreme",
+            "time_limit": 900,  # 15 minutes
             "objectives": [
                 {
-                    "id": "reach_extraction",
-                    "type": "reach_position",
-                    "description": "Reach the extraction point",
-                    "position": [300, 300, 0],
-                    "radius": 20,
+                    "id": "eliminate_command",
+                    "type": "defeat_all",
+                    "description": "Eliminate Federation Command Post",
+                    "target_group": "command_post",
                     "mandatory": True
                 },
                 {
-                    "id": "defeat_all",
+                    "id": "destroy_turrets",
                     "type": "defeat_all",
-                    "description": "Defeat all purgers (optional)",
+                    "description": "Destroy all defensive turrets",
+                    "target_group": "turrets",
+                    "mandatory": True
+                },
+                {
+                    "id": "hold_ridge",
+                    "type": "survive_time",
+                    "description": "Hold Blood Ridge for 10 minutes",
+                    "time": 600,
+                    "mandatory": True
+                },
+                {
+                    "id": "rescue_prisoners",
+                    "type": "reach_position",
+                    "description": "Rescue prisoners (optional)",
+                    "position": [-150, -150, 0],
+                    "radius": 20,
                     "mandatory": False
                 }
             ],
@@ -190,14 +370,20 @@ class MissionManager:
                 {
                     "type": "balanced",
                     "position": [0, 0, 0],
-                    "size": 6,
-                    "name": "Rescue Team"
+                    "size": 10,
+                    "name": "Strike Force Alpha"
+                },
+                {
+                    "type": "archer",
+                    "position": [-20, 20, 0],
+                    "size": 8,
+                    "name": "Ranger Squad"
                 },
                 {
                     "type": "grenadier",
                     "position": [20, -20, 0],
-                    "size": 4,
-                    "name": "Heavy Support"
+                    "size": 5,
+                    "name": "Demo Team"
                 }
             ],
             "enemy_waves": [
@@ -207,57 +393,65 @@ class MissionManager:
                     "squads": [
                         {
                             "type": "gromflomite",
-                            "position": [100, 100, 0],
-                            "size": 8,
-                            "name": "Purgers Alpha"
-                        }
-                    ]
-                },
-                {
-                    "trigger": "time",
-                    "trigger_time": 120,
-                    "squads": [
-                        {
-                            "type": "gromflomite",
-                            "position": [-100, 150, 0],
-                            "size": 10,
-                            "name": "Purgers Beta"
-                        }
-                    ]
-                },
-                {
-                    "trigger": "time",
-                    "trigger_time": 240,
-                    "squads": [
-                        {
-                            "type": "gromflomite",
-                            "position": [150, -100, 0],
-                            "size": 12,
-                            "name": "Purgers Gamma"
-                        }
-                    ]
-                },
-                {
-                    "trigger": "time",
-                    "trigger_time": 360,
-                    "squads": [
-                        {
-                            "type": "gromflomite",
                             "position": [200, 200, 0],
                             "size": 15,
-                            "name": "Purgers Delta"
+                            "name": "Federation Guards",
+                            "group": "command_post"
+                        },
+                        {
+                            "type": "turret",
+                            "position": [150, 150, 0],
+                            "size": 4,
+                            "name": "Defense Turrets",
+                            "group": "turrets"
+                        }
+                    ]
+                },
+                {
+                    "trigger": "time",
+                    "trigger_time": 300,  # 5 minutes in
+                    "squads": [
+                        {
+                            "type": "gromflomite_elite",
+                            "position": [250, 250, 0],
+                            "size": 8,
+                            "name": "Elite Guard"
+                        }
+                    ]
+                },
+                {
+                    "trigger": "time",
+                    "trigger_time": 600,  # 10 minutes in
+                    "squads": [
+                        {
+                            "type": "gromflomite_commander",
+                            "position": [0, 300, 0],
+                            "size": 1,
+                            "name": "Federation Commander"
+                        },
+                        {
+                            "type": "gromflomite",
+                            "position": [50, 300, 0],
+                            "size": 20,
+                            "name": "Final Reinforcements"
                         }
                     ]
                 }
             ]
         }
         
-        # Save to file
-        filepath = os.path.join(self.missions_dir, "purge_planet.json")
-        with open(filepath, 'w') as f:
-            json.dump(mission_data, f, indent=2)
-            
-        print(f"Created default mission: Purge Planet Patrol")
+        # Add new missions to the list
+        missions.append(cronenberg_mission)
+        missions.append(blood_ridge_mission)
+
+        # For each mission in our list
+        for mission_data in missions:
+            # Save to file
+            filepath = os.path.join(self.missions_dir, f"{mission_data['mission_id']}.json")
+            with open(filepath, 'w') as f:
+                json.dump(mission_data, f, indent=2)
+                
+            print(f"Created default mission: {mission_data['name']}")
     
     def start_mission(self, mission_id: str, game_state) -> bool:
         """

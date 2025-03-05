@@ -27,6 +27,12 @@ class Dimensioneer(Unit):
         self.damage = 25
         self.attack_range = 2.0
         self.attack_speed = 1.2  # attacks per second
+        self.is_ranged = False  # This is a melee unit
+        
+        # Knockback settings
+        self.knockback_power = 1.5  # Strong knockback on hit
+        self.knockback_resistance = 0.6  # Good resistance to being knocked back
+        self.knockback_recovery = 0.8  # Quick recovery from knockback
         
         # Special abilities
         self.can_dimension_slash = True
