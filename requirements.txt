@@ -1,0 +1,4 @@
+pygame==2.5.2
+numpy==1.24.4
+pymunk==6.6.0  # For physics
+pynput==1.7.6  # For input handling

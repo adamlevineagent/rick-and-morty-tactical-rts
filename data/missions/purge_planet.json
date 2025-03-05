@@ -1,0 +1,116 @@
+{
+  "mission_id": "purge_planet",
+  "name": "Purge Planet Patrol",
+  "description": "It's the annual Purge on this planet! Rescue stranded scientists while defending against hostile purgers.",
+  "map_name": "purge_planet",
+  "difficulty": "hard",
+  "time_limit": 600,
+  "objectives": [
+    {
+      "id": "reach_extraction",
+      "type": "reach_position",
+      "description": "Reach the extraction point",
+      "position": [
+        300,
+        300,
+        0
+      ],
+      "radius": 20,
+      "mandatory": true
+    },
+    {
+      "id": "defeat_all",
+      "type": "defeat_all",
+      "description": "Defeat all purgers (optional)",
+      "mandatory": false
+    }
+  ],
+  "player_squads": [
+    {
+      "type": "balanced",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": 6,
+      "name": "Rescue Team"
+    },
+    {
+      "type": "grenadier",
+      "position": [
+        20,
+        -20,
+        0
+      ],
+      "size": 4,
+      "name": "Heavy Support"
+    }
+  ],
+  "enemy_waves": [
+    {
+      "trigger": "time",
+      "trigger_time": 0,
+      "squads": [
+        {
+          "type": "gromflomite",
+          "position": [
+            100,
+            100,
+            0
+          ],
+          "size": 8,
+          "name": "Purgers Alpha"
+        }
+      ]
+    },
+    {
+      "trigger": "time",
+      "trigger_time": 120,
+      "squads": [
+        {
+          "type": "gromflomite",
+          "position": [
+            -100,
+            150,
+            0
+          ],
+          "size": 10,
+          "name": "Purgers Beta"
+        }
+      ]
+    },
+    {
+      "trigger": "time",
+      "trigger_time": 240,
+      "squads": [
+        {
+          "type": "gromflomite",
+          "position": [
+            150,
+            -100,
+            0
+          ],
+          "size": 12,
+          "name": "Purgers Gamma"
+        }
+      ]
+    },
+    {
+      "trigger": "time",
+      "trigger_time": 360,
+      "squads": [
+        {
+          "type": "gromflomite",
+          "position": [
+            200,
+            200,
+            0
+          ],
+          "size": 15,
+          "name": "Purgers Delta"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "mission_id": "citadel_crisis",
+  "name": "Citadel Crisis",
+  "description": "Federation forces have launched an assault on the Citadel. Defeat the waves of Gromflomites and protect the citizens!",
+  "map_name": "citadel",
+  "difficulty": "normal",
+  "time_limit": 0,
+  "objectives": [
+    {
+      "id": "defeat_enemies",
+      "type": "defeat_all",
+      "description": "Defeat all enemy forces",
+      "mandatory": true
+    },
+    {
+      "id": "protect_civilians",
+      "type": "survive_time",
+      "description": "Protect civilians for 5 minutes",
+      "time": 300,
+      "mandatory": true
+    }
+  ],
+  "player_squads": [
+    {
+      "type": "balanced",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": 8,
+      "name": "Defense Squad Alpha"
+    },
+    {
+      "type": "archer",
+      "position": [
+        -50,
+        50,
+        0
+      ],
+      "size": 5,
+      "name": "Defense Squad Bravo"
+    }
+  ],
+  "enemy_waves": [
+    {
+      "trigger": "time",
+      "trigger_time": 10,
+      "squads": [
+        {
+          "type": "gromflomite",
+          "position": [
+            200,
+            200,
+            0
+          ],
+          "size": 10,
+          "name": "First Wave"
+        }
+      ]
+    },
+    {
+      "trigger": "enemies_defeated",
+      "squads": [
+        {
+          "type": "gromflomite",
+          "position": [
+            200,
+            -200,
+            0
+          ],
+          "size": 15,
+          "name": "Second Wave"
+        },
+        {
+          "type": "gromflomite",
+          "position": [
+            -200,
+            200,
+            0
+          ],
+          "size": 5,
+          "name": "Flanking Force"
+        }
+      ]
+    },
+    {
+      "trigger": "enemies_defeated",
+      "squads": [
+        {
+          "type": "gromflomite",
+          "position": [
+            250,
+            0,
+            0
+          ],
+          "size": 20,
+          "name": "Final Wave"
+        }
+      ]
+    }
+  ]
+}

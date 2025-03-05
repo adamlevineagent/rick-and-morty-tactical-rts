@@ -1,0 +1,58 @@
+{
+  "display": {
+    "width": 1280,
+    "height": 720,
+    "fullscreen": false,
+    "vsync": true
+  },
+  "graphics": {
+    "terrain_quality": "medium",
+    "effects_quality": "high",
+    "max_particles": 1000,
+    "draw_distance": 500
+  },
+  "audio": {
+    "master_volume": 1.0,
+    "music_volume": 0.7,
+    "sfx_volume": 0.8,
+    "voice_volume": 1.0
+  },
+  "game": {
+    "difficulty": "normal",
+    "camera_speed": 500,
+    "camera_rotation_speed": 90,
+    "edge_scroll_sensitivity": 20,
+    "default_formations": [
+      {
+        "name": "line",
+        "spacing": 2.0
+      },
+      {
+        "name": "wedge",
+        "spacing": 2.5
+      },
+      {
+        "name": "column",
+        "spacing": 2.0
+      }
+    ]
+  },
+  "controls": {
+    "rotate_left": "q",
+    "rotate_right": "e",
+    "zoom_in": "z",
+    "zoom_out": "x",
+    "pitch_up": "w",
+    "pitch_down": "s",
+    "camera_up": "up",
+    "camera_down": "down",
+    "camera_left": "left",
+    "camera_right": "right"
+  },
+  "debug": {
+    "show_fps": true,
+    "show_grid": true,
+    "show_unit_paths": false,
+    "invincible_player_units": false
+  }
+}
